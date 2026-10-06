@@ -1,4 +1,4 @@
-name: Build Flutter APK
+name: Build Professional APK
 on:
   push:
     branches: [ "main" ]
@@ -6,34 +6,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Code
         uses: actions/checkout@v4
-      - name: Setup Java Development Kit (JDK 17)
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Flutter SDK
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.0'
           channel: 'stable'
           cache: true
-      - name: Generate Flutter Scaffolding
+      - name: Create App
         run: flutter create expense_tracker
-      - name: Inject Custom Architecture
+      - name: Inject Professional Code and Fix API Levels
         run: |
           cp project_files/pubspec.yaml expense_tracker/pubspec.yaml
           cp project_files/main.dart expense_tracker/lib/main.dart
-      - name: Resolve Dependencies
+          sed -i 's/flutter.targetSdkVersion/34/g' expense_tracker/android/app/build.gradle
+          sed -i 's/flutter.compileSdkVersion/34/g' expense_tracker/android/app/build.gradle
+      - name: Build APK
         working-directory: ./expense_tracker
-        run: flutter pub get
-      - name: Automated Android Build
-        working-directory: ./expense_tracker
-        run: flutter build apk --release
-      - name: Artifact Archival
+        run: |
+          flutter pub get
+          flutter build apk --release
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
+          name: Professional-Expense-Tracker
           path: expense_tracker/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
